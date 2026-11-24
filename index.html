@@ -383,13 +383,48 @@ html body #projectOwnershipModal button#projectOwnershipClose{
 }
 </style>
 
+<style>
+/* Jalal AI Connect: proof-only optional enhancement */
+
+/* Finnish AI proof settings: compact controls with clear colors */
+.geo-ai-dialog #geoTest{background:#fff2a8 !important;border-color:#c5a12a !important;color:#493500 !important;font-weight:800 !important}
+.geo-ai-dialog #geoTest.connected{background:#b9f5c6 !important;border-color:#479d63 !important;color:#14532d !important}
+.geo-ai-dialog #geoRemove{background:#ffd4d6 !important;border-color:#da8288 !important;color:#891b25 !important;font-weight:800 !important}
+.geo-ai-dialog #geoExample{background:#cae9ff !important;border-color:#6cacdc !important;color:#124c88 !important;font-weight:800 !important}
+.geo-ai-dialog #geoDevice{background:#e5f4e4 !important;border-color:#81b387 !important;color:#14532d !important;font-weight:900 !important}
+.geo-ai-dialog #geoTest:disabled{opacity:.78;cursor:wait}
+/* Slightly smaller setting controls */
+.geo-ai-dialog .geo-ai-actions button{
+  font-size:13px !important;
+  padding:7px 10px !important;
+  min-height:36px;
+  line-height:1.35;
+  border-radius:8px;
+}
+/* Session save text is slightly larger */
+.geo-ai-dialog #geoSession{font-size:14px !important;}
+
+.geo-ai-top{display:flex;gap:9px;align-items:center;justify-content:center;flex-wrap:wrap;margin:0 0 13px}
+.geo-ai-status{font-weight:750;border:1px solid #9a802c;border-radius:20px;padding:7px 11px;background:#3a331c;color:#ffe08a;font-size:13px}
+.geo-ai-status.ready{background:#173e30;color:#aff9cb;border-color:#398c64}
+.geo-ai-modal{position:fixed;inset:0;z-index:2147483646;background:#000b;display:flex;align-items:center;justify-content:center;padding:12px}
+.geo-ai-dialog{direction:ltr;text-align:left;width:min(680px,100%);max-height:92vh;overflow:auto;background:#15233c;color:#f0f6ff;border:1px solid #607794;border-radius:15px;padding:18px;line-height:1.8}
+.geo-ai-dialog h2{margin:0;color:#d9f4ff}.geo-ai-dialog label{display:block;margin:10px 0 3px;font-weight:700}
+.geo-ai-dialog input:not([type=checkbox]),.geo-ai-dialog select{width:100%;min-height:42px;background:#091727;color:#fff;border:1px solid #6d86a5;padding:8px;border-radius:8px}
+.geo-ai-dialog button{margin:4px}.geo-ai-dialog .geo-ai-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:13px}
+.geo-ai-dialog .geo-ai-help{border:1px solid #516e8f;background:#203251;border-radius:9px;padding:9px;margin:9px 0}
+.geo-ai-dialog a{color:#8ddcff}.geo-ai-response{white-space:pre-wrap;overflow-wrap:anywhere;direction:ltr;text-align:left;unicode-bidi:plaintext;font:15px/1.9 Arial,Tahoma,sans-serif}
+.geo-ai-source{font-weight:700;color:#87ddff}.geo-ai-output{margin-top:12px;background:#111d32;border:1px solid #527293;border-radius:10px;padding:12px}
+
+</style>
 </head>
 <body>
 <div class="app">
   <h1>Tasogeometrian euklidinen geometriamoottori</h1>
   <div class="sub">Euclidean Geometry Engine — Interaktiivinen euklidinen geometria</div>
 
-  <div class="workspace">
+  <div class="geo-ai-top"><span id="geoAIStatus" class="geo-ai-status">🟡 Paikallinen todistusmoottori on valmis</span><button id="geoAISettings" type="button">⚙️ Tekoälyasetukset</button></div>
+<div class="workspace">
     <main>
       <div class="card">
         <div class="toolbar">
@@ -682,7 +717,7 @@ Lähennys ja loitonnus vaikuttavat vain näkymään. Laskutoimituksia, piirtämi
             <textarea id="proveGivens" class="proofMathInput" rows="4" dir="ltr" style="width:100%;resize:vertical;font:inherit;border-radius:9px;border:1px solid #385071;padding:10px;background:var(--panel2);color:var(--text);line-height:1.7" placeholder="Annetut tiedot: esim. ABC on kolmio, ∠ABC = ∠BCA"></textarea>
             <textarea id="proveText" class="proofMathInput" rows="3" dir="ltr" style="width:100%;resize:vertical;font:inherit;border-radius:9px;border:1px solid #385071;padding:10px;background:var(--panel2);color:var(--text);line-height:1.7" placeholder="Todistettava: esim. todista, että AB = AC"></textarea>
             <div class="toolbar" style="margin-top:10px">
-              <button id="proveRun">Todista</button>
+              <button id="proveRun">Todista</button><button id="geoLocalProof" type="button" title="Käytä alkuperäistä paikallista todistusta ilman verkkoyhteyttä">Paikallinen todistus</button>
             </div>
             <div class="info">Todistus perustuu kolmeen lähteeseen yhdessä: annettuihin tietoihin, piirroksessa olevaan kuvioon sekä todistussääntöihin ja lauseisiin. Työkalu tulkitsee merkintöjä kuten AB = AC, ∠ABC = ∠BCA, AD ⟂ BC, DE ∥ BC ja D on janan BC keskipiste.</div>
           </div>
@@ -3642,7 +3677,7 @@ document.querySelectorAll('.futureShape').forEach(btn=>btn.addEventListener('cli
  else activate(btn,'future',s,'Tämän kuvion laskutoiminnot määritetään myöhemmin.',null);
 }));
 document.getElementById('clearCalc').addEventListener('click',()=>{pushHistory();overlays.clear();distanceSelection=[];distanceSegments=[];measurePoints=[];circleTangents=[];angleLineSelection=[];angleMarks=[];angleMeasurePoints=[];angleMeasureLines=[];angleLineSelection=[];angleMarks=[];angleMeasurePoints=[];angleMeasureLines=[];lineObjs.forEach(l=>l.perp=null);calc.value='';results.innerHTML='<h3>Laskentatulokset</h3><div class="info">Laskentatulokset tyhjennettiin. Geometriset kuviot säilytettiin.</div>';draw()});
-document.getElementById('clearDrawing').addEventListener('click',()=>{setActionNote('Tyhjennä piirros: Poistaa kaikki kuviot ja pisteet piirtoalueelta ja palauttaa kolmion piirtämisen aloitustilaan.');pushHistory();triPts=[];triangles=[];triangleCalcTarget=null;pendingTriangleCalc='';triangleOperations=[];triangleIdSeq=0;circles=[];lineObjs=[];polygons=[];rectangles=[];circleTangents=[];freePoints=[];arcs=[];arcSelection=[];arcPreview=null;locusTraces=[];locusSelection=[];proofAuxLines=[];functionPlots=[];drawingTexts=[];currentCircle=[];currentLine=[];currentPoly=[];currentRect=[];overlays.clear();distanceSelection=[];distanceSegments=[];measurePoints=[];calc.value='';triangleCalcTarget=null;pendingTriangleCalc='';gripSelection=null;gripDrag=null;activeTool='triangle';clearActiveButtons();triangleTool.classList.add('active');trianglePanel.style.display='block';futurePanel.style.display='none';toolStatus.textContent='Nykyinen työkalu: kolmio';drawHint.textContent='Napsauta piirtoaluetta ja valitse A, sitten B ja C. Kolmannen pisteen jälkeen kolmio muodostuu automaattisesti.';results.innerHTML='<h3>Laskentatulokset</h3><div class="info">Piirtoalue tyhjennettiin. Aloita pisteestä A.</div>';draw()});
+document.getElementById('clearDrawing').addEventListener('click',()=>{setActionNote('Tyhjennä piirros: Poistaa kaikki kuviot ja pisteet piirtoalueelta ja palauttaa kolmion piirtämisen aloitustilaan.');pushHistory();triPts=[];triangles=[];triangleCalcTarget=null;pendingTriangleCalc='';triangleOperations=[];triangleIdSeq=0;circles=[];lineObjs=[];polygons=[];rectangles=[];circleTangents=[];freePoints=[];arcs=[];arcSelection=[];arcPreview=null;locusTraces=[];locusSelection=[];proofAuxLines=[];functionPlots=[];drawingTexts=[];currentCircle=[];currentLine=[];currentPoly=[];currentRect=[];overlays.clear();distanceSelection=[];distanceSegments=[];measurePoints=[];angleLineSelection=[];angleMarks=[];angleMeasurePoints=[];angleMeasureLines=[];calc.value='';triangleCalcTarget=null;pendingTriangleCalc='';gripSelection=null;gripDrag=null;activeTool='triangle';clearActiveButtons();triangleTool.classList.add('active');trianglePanel.style.display='block';futurePanel.style.display='none';toolStatus.textContent='Nykyinen työkalu: kolmio';drawHint.textContent='Napsauta piirtoaluetta ja valitse A, sitten B ja C. Kolmannen pisteen jälkeen kolmio muodostuu automaattisesti.';results.innerHTML='<h3>Laskentatulokset</h3><div class="info">Piirtoalue tyhjennettiin. Aloita pisteestä A.</div>';draw()});
 document.querySelectorAll('.proofSymbol').forEach(btn=>btn.addEventListener('click',()=>{
  const target=(document.activeElement===proveText||document.activeElement===proveGivens)?document.activeElement:proveGivens;
  const sym=btn.dataset.symbol||btn.textContent;
@@ -3758,5 +3793,59 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeProjectBottomMo
 })();
 </script>
 
+<script>
+/* Jalal AI Connect: Finnish-only optional proofs. The local geometry engine remains intact. */
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const PROVIDERS={
+ gemini:{name:'Google Gemini',url:'https://generativelanguage.googleapis.com/v1beta',models:['gemini-3.5-flash-lite','gemini-2.5-flash-lite','gemini-2.5-flash']},
+ openai:{name:'OpenAI',url:'https://api.openai.com/v1/chat/completions',models:['gpt-4.1-mini','gpt-4o-mini']},
+ openrouter:{name:'OpenRouter',url:'https://openrouter.ai/api/v1/chat/completions',models:['openrouter/auto','google/gemini-2.5-flash']},
+ groq:{name:'GroqCloud',url:'https://api.groq.com/openai/v1/chat/completions',models:['openai/gpt-oss-20b','openai/gpt-oss-120b']},
+ huggingface:{name:'Hugging Face',url:'https://router.huggingface.co/v1/chat/completions',models:['Qwen/Qwen3-32B','meta-llama/Llama-3.3-70B-Instruct']},
+ anthropic:{name:'Claude (Anthropic)',url:'https://api.anthropic.com/v1/messages',models:['claude-haiku-4-5','claude-sonnet-4-5']},
+ custom:{name:'OpenAI-Compatible / Other',url:'',models:[]}
+};
+const I={
+ fi:{settings:'Tekoälyasetukset',example:'📖 Esimerkki',close:'Sulje',scope:'Ulkoinen tekoäly toimii VAIN ”Todista”-painikkeessa. Se ei muuta piirtämistä, laskutoimituksia, kuva-analyysiä eikä muita työkaluja.',enabled:'Käytä ulkoista tekoälyä painettaessa ”Todista”',provider:'Tekoälypalvelu',models:'Ehdotetut mallit',model:'Mallin tunnus (muokattava)',endpoint:'API-osoite',key:'Henkilökohtainen API-avain',show:'Näytä / piilota',test:'Testaa yhteys',session:'Tallenna istunnon ajaksi',device:'Tallenna tälle laitteelle',remove:'Poista avain',local:'🟡 Paikallinen todistusmoottori on valmis',ready:'🟢 Ulkoinen tekoäly on valmis',testing:'Yhteyttä testataan...',success:'Yhteys onnistui. Tekoäly on valmis todistuksiin.',saved:'Asetukset tallennettu. Testaa yhteys ottaaksesi ulkoisen tekoälyn käyttöön.',missing:'Syötä ensin API-avain ja mallin tunnus.',error:'Ulkoinen yhteys epäonnistui. Paikallinen todistus toimii edelleen.',busy:'Palvelu on tilapäisesti ruuhkautunut (503).',quota:'Pyyntö- tai käyttöraja täyttyi (429).',invalid:'Virheellinen avain tai käyttöoikeus puuttuu (401/403).',notfound:'Mallia tai API-osoitetta ei löytynyt (404).',network:'Verkkovirhe tai selaimen CORS-rajoitus. Kokeile tuettua selainta tai suojattua välityspalvelinta.',working:'Tekoäly laatii todistusta...',localused:'Ulkoinen todistus ei ole käytettävissä. Käynnistetään paikallinen todistus.',guideTitle:'Esimerkki: Gemini-API-avaimen hankkiminen ja liittäminen todistustyökaluun',intro:'Voit luoda Google Gemini -API-avaimen ja käyttää sitä vain Todista-toiminnossa. Ohjelmointitaitoja ei tarvita.',guideSteps:['Avaa Google AI Studion API-avainsivu ja kirjaudu Google-tilillesi.','Valitse Create API key ja joko olemassa oleva projekti tai luo uusi.','Kopioi avain. Pidä se salassa äläkä jaa sitä muille.','Palaa tämän sivun Tekoälyasetukset-kohtaan, valitse Google Gemini ja liitä avain.','Valitse tililläsi käytettävissä oleva malli (esimerkiksi gemini-3.5-flash-lite) ja säilytä oletusarvoinen API-osoite.','Valitse Tallenna istunnon ajaksi tai Tallenna tälle laitteelle, ja paina Testaa yhteys.','Kirjoita annetut tiedot ja todistettava väite. Paina Todista saadaksesi tekoälyn ehdottaman todistuksen. Paikallinen todistus on aina käytettävissä.'],selectGemini:'Valitse Gemini 3.5 Flash-Lite',security:'Tietoturva: selaimeen tallennettu API-avain ei ole salattu. Käytä toimintoa vain luotetulla omalla laitteella. Yhteystestit voivat kuluttaa kiintiötä. Tekoälyn laatimat todistukset eivät ole muodollisesti tarkistettuja: tarkista jokainen vaihe.'},
+};
+let conf={provider:'gemini',model:'gemini-3.5-flash-lite',url:PROVIDERS.gemini.url,enabled:true},key='',ready=false,working=false;
+const t=k=>I.fi[k]||k;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function storageKey(p,kind){return 'EUCLID_AI_'+p+'_'+kind+'_KEY'}
+function readKey(p){try{return sessionStorage.getItem(storageKey(p,'SESSION'))||localStorage.getItem(storageKey(p,'DEVICE'))||''}catch(_){return ''}}
+try{conf={...conf,...JSON.parse(localStorage.getItem('EUCLID_AI_CONFIG')||'{}')};if(!PROVIDERS[conf.provider])conf.provider='gemini';key=readKey(conf.provider)}catch(_){ }
+function status(){const el=$('geoAIStatus');if(!el)return;el.classList.toggle('ready',ready&&conf.enabled&&!!key);el.textContent=ready&&conf.enabled&&key?t('ready')+' — '+PROVIDERS[conf.provider].name:t('local')}
+function message(s){const el=$('geoAIMessage');if(el)el.textContent=s}
+function validURL(u,p){try{const x=new URL(u);return x.protocol==='https:'&&!x.username&&!x.password&&!x.hash&&(p!=='custom'||/\/chat\/completions\/?$/.test(x.pathname))}catch(_){return false}}
+function current(){return {provider:$('geoProvider').value,model:$('geoModel').value.trim(),url:$('geoEndpoint').value.trim(),enabled:$('geoEnabled').checked,apikey:$('geoKey').value.trim()}}
+function selectProvider(p){const provider=PROVIDERS[p],sel=$('geoSuggested');sel.replaceChildren(...provider.models.map(model=>{const option=document.createElement('option');option.value=model;option.textContent=model;return option}));$('geoModel').value=provider.models[0]||'';$('geoEndpoint').value=provider.url;$('geoKey').value=readKey(p)}
+function save(permanent){const c=current();if(!PROVIDERS[c.provider]||!c.model||!validURL(c.url,c.provider)){message(t('notfound'));return false}try{sessionStorage.removeItem(storageKey(c.provider,'SESSION'));localStorage.removeItem(storageKey(c.provider,'DEVICE'));if(c.apikey)(permanent?localStorage:sessionStorage).setItem(storageKey(c.provider,permanent?'DEVICE':'SESSION'),c.apikey);localStorage.setItem('EUCLID_AI_CONFIG',JSON.stringify({provider:c.provider,model:c.model,url:c.url,enabled:c.enabled}));}catch(e){message(e.message);return false}conf={provider:c.provider,model:c.model,url:c.url,enabled:c.enabled};key=c.apikey;ready=false;status();message('Asetukset tallennettu. Todista-toiminto yhdistää automaattisesti ilman uutta yhteystestiä.');return true}
+function errorMessage(err){const s=err.status;if([502,503,504].includes(s))return t('busy');if(s===429)return t('quota');if([401,403].includes(s))return t('invalid');if(s===404)return t('notfound');return s?('HTTP '+s+': '+String(err.message||'').slice(0,130)):'Verkkoyhteys epäonnistui tai aikakatkaisu tapahtui.'}
+async function callAI(prompt,c){const url=c.provider==='gemini'?c.url.replace(/\/+$/,'')+'/models/'+encodeURIComponent(c.model)+':generateContent':c.url;let headers={'Content-Type':'application/json'},body;
+ if(c.provider==='gemini'){headers['x-goog-api-key']=c.apikey;body={contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.1,maxOutputTokens:3000}}}
+ else if(c.provider==='anthropic'){headers['x-api-key']=c.apikey;headers['anthropic-version']='2023-06-01';headers['anthropic-dangerous-direct-browser-access']='true';body={model:c.model,max_tokens:3000,messages:[{role:'user',content:prompt}]}}
+ else{headers.Authorization='Bearer '+c.apikey;body={model:c.model,messages:[{role:'user',content:prompt}],max_tokens:3000}}
+ for(let attempt=0;attempt<3;attempt++){const ctrl=new AbortController(),tm=setTimeout(()=>ctrl.abort(),45000);try{const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body),signal:ctrl.signal});const data=await r.json().catch(()=>({}));if(!r.ok){let e=new Error(String(data.error?.message||data.message||'Request failed').slice(0,180));e.status=r.status;throw e}let out=c.provider==='gemini'?(data.candidates||[]).flatMap(x=>x.content?.parts||[]).map(x=>x.text||'').join('\n'):c.provider==='anthropic'?(data.content||[]).map(x=>x.text||'').join('\n'):(typeof data.choices?.[0]?.message?.content==='string'?data.choices[0].message.content:(data.choices?.[0]?.message?.content||[]).map(x=>x.text||'').join('\n'));if(!out.trim())throw Error('Empty model response');return out.trim()}catch(e){if(!([502,503,504,429].includes(e.status)||(!e.status&&(e.name==='AbortError'||e instanceof TypeError)))||attempt===2)throw e;await new Promise(ok=>setTimeout(ok,1000*(2**attempt)))}finally{clearTimeout(tm)}}}
+function openSettings(){const box=document.createElement('div');box.className='geo-ai-modal';box.id='geoAIModal';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.innerHTML=`<div class="geo-ai-dialog"><div style="display:flex;justify-content:space-between;gap:9px;align-items:center"><h2>${esc(t('settings'))}</h2><button id="geoClose" type="button">✕ ${esc(t('close'))}</button></div><div class="geo-ai-help">${esc(t('scope'))} ${esc('Ulkoista tekoälyä käytetään vain Todista-toiminnossa. Avaimen tallentamisen jälkeen yhteyttä ei tarvitse testata ennen jokaista todistusta. Vihreä ilmaisee tämän istunnon onnistunutta todellista pyyntöä.')}</div><label><input id="geoEnabled" type="checkbox" ${conf.enabled?'checked':''}> ${esc(t('enabled'))}</label><label>${esc(t('provider'))}</label><select id="geoProvider">${Object.entries(PROVIDERS).map(([id,p])=>`<option value="${id}" ${id===conf.provider?'selected':''}>${esc(p.name)}</option>`).join('')}</select><label>${esc(t('models'))}</label><select id="geoSuggested"></select><label>${esc(t('model'))}</label><input id="geoModel" type="text" dir="ltr"><label>${esc(t('endpoint'))}</label><input id="geoEndpoint" type="url" dir="ltr"><label>${esc(t('key'))}</label><input id="geoKey" type="password" autocomplete="off" dir="ltr"><button id="geoShow" type="button">${esc(t('show'))}</button><div class="geo-ai-actions"><button id="geoTest" type="button">${esc(t('test'))}</button><button id="geoSession" type="button">${esc(t('session'))}</button><button id="geoDevice" type="button">${esc(t('device'))}</button><button id="geoRemove" type="button">${esc(t('remove'))}</button><button id="geoExample" type="button">${esc(t('example'))}</button></div><div id="geoAIMessage" role="status" aria-live="polite" style="margin:12px 0;color:#ffe4a3"></div><div class="geo-ai-help">${esc(t('security'))}</div></div>`;document.body.append(box);
+ $('geoTest').classList.toggle('connected',ready&&conf.enabled&&!!key);const suggested=$('geoSuggested');selectProvider(conf.provider);$('geoModel').value=conf.model;$('geoEndpoint').value=conf.url;$('geoKey').value=key;if(PROVIDERS[conf.provider].models.includes(conf.model))suggested.value=conf.model;
+ $('geoClose').onclick=()=>box.remove();box.addEventListener('click',e=>{if(e.target===box)box.remove()});$('geoProvider').onchange=e=>{selectProvider(e.target.value);$('geoTest').classList.remove('connected');ready=false;status()};suggested.onchange=()=>{$('geoModel').value=suggested.value;$('geoTest').classList.remove('connected');ready=false;status()};['geoKey','geoModel','geoEndpoint','geoEnabled'].forEach(id=>$(id).addEventListener('input',()=>{$('geoTest').classList.remove('connected');ready=false;status()}));$('geoShow').onclick=()=>{$('geoKey').type=$('geoKey').type==='password'?'text':'password'};
+ $('geoSession').onclick=()=>{save(false);$('geoTest').classList.remove('connected')};$('geoDevice').onclick=()=>{save(true);$('geoTest').classList.remove('connected')};$('geoRemove').onclick=()=>{const c=current();try{sessionStorage.removeItem(storageKey(c.provider,'SESSION'));localStorage.removeItem(storageKey(c.provider,'DEVICE'))}catch(_){}$('geoKey').value='';$('geoTest').classList.remove('connected');if(c.provider===conf.provider){key='';ready=false;status()}message(t('local'))};
+ $('geoTest').onclick=async()=>{const c=current();if(!c.apikey||!c.model){message(t('missing'));return}if(!validURL(c.url,c.provider)){message(t('notfound'));return}const b=$('geoTest');b.disabled=true;b.classList.remove('connected');ready=false;status();message(t('testing'));try{await callAI('Reply with one word: OK',c);conf={provider:c.provider,model:c.model,url:c.url,enabled:c.enabled};key=c.apikey;ready=true;b.classList.add('connected');status();message('Yhteys onnistui. Avaimen tallennustapa ei muuttunut.')}catch(e){ready=false;b.classList.remove('connected');status();message(t('error')+' '+errorMessage(e))}finally{b.disabled=false}};
+ $('geoExample').onclick=()=>openExample();$('geoClose').focus();}
+function openExample(){const overlay=document.createElement('div');overlay.className='geo-ai-modal';overlay.id='geoAIExample';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.innerHTML=`<div class="geo-ai-dialog"><h2>${esc(t('guideTitle'))}</h2><button id="geoGuideClose" type="button">✕ ${esc(t('close'))}</button><p>${esc(t('intro'))}</p><ol>${t('guideSteps').map(x=>'<li>'+esc(x)+'</li>').join('')}</ol><p><a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener noreferrer">🔑 Google AI Studio — API Keys ↗</a></p><p><a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener noreferrer">Google Gemini — Pricing &amp; Quotas ↗</a></p><button id="geoGuideSelect" type="button">${esc(t('selectGemini'))}</button><p class="geo-ai-help">${esc(t('security'))}</p></div>`;document.body.append(overlay);$('geoGuideClose').onclick=()=>overlay.remove();overlay.onclick=e=>{if(e.target===overlay)overlay.remove()};$('geoGuideSelect').onclick=()=>{const p=$('geoProvider');if(p){p.value='gemini';selectProvider('gemini');$('geoModel').value='gemini-3.5-flash-lite';$('geoSuggested').value='gemini-3.5-flash-lite'}overlay.remove();$('geoKey')?.focus()};$('geoGuideClose').focus()}
+function getDrawing(){try{const ps=activeCalcTriangle();const tr=ps&&ps.length===3?ps.map((p,i)=>({point:['A','B','C'][i],x:Number(p.x.toFixed(2)),y:Number(p.y.toFixed(2))})):[];return JSON.stringify({triangle:tr,drawnFacts:proofDrawingFacts().slice(0,35),lines:lineObjs.slice(0,15).map((l,i)=>({name:'L'+(i+1),a:l.a,b:l.b})),circles:circles.slice(0,10).map((c,i)=>({name:'O'+(i+1),center:c.o,radius:c.r}))}).slice(0,7000)}catch(_){return 'Piirroksesta ei saatu käyttökelpoisia tietoja'}}
+let forceLocalProof=false;
+function runLocalProof(){forceLocalProof=true;try{$('proveRun').click()}finally{forceLocalProof=false}}
+async function runAIProof(){if(working)return;const given=$('proveGivens').value.trim(),goal=$('proveText').value.trim();if(!goal){runLocalProof();return}const btn=$('proveRun');const old=btn.textContent;working=true;btn.disabled=true;btn.textContent='…';const out=$('geoAIProofOutput');out.hidden=false;out.textContent=t('working');ready=false;status();const c={...conf,apikey:key};let fallbackToLocal=false;const prompt=`You are a rigorous Euclidean geometry proof tutor. Write the solution ONLY in fluent Finnish (the whole geometry page is in Finnish). Use only the user-stated givens and valid established theorems. Treat drawing coordinates as approximate illustration, NOT as mathematical proof and do not assume relations that have not been explicitly given. If a needed hypothesis is absent or the desired claim does not follow, explicitly say a proof is impossible with the supplied information and ask for what is missing; NEVER invent a theorem or a diagram property. Present: (1) Given (2) To Prove (3) Numbered proof steps, each with a justification (4) Conclusion (5) Any missing assumptions or unverified claims. Do not claim formal machine verification.\n\nUSER GIVENS:\n${given}\nGOAL:\n${goal}\nDRAWING CONTEXT (illustration, may be inaccurate):\n${getDrawing()}`;
+ try{const answer=await callAI(prompt,c);out.replaceChildren();const heading=document.createElement('div');heading.className='geo-ai-source';heading.textContent='✨ Tekoälyn ehdottama todistus – '+PROVIDERS[c.provider].name+' · '+c.model;const proof=document.createElement('div');proof.className='geo-ai-response';proof.textContent=answer;out.append(heading,proof);ready=true;status()}catch(e){ready=false;status();out.textContent=t('localused')+' '+errorMessage(e);fallbackToLocal=true}finally{btn.disabled=false;btn.textContent=old;working=false;if(fallbackToLocal)runLocalProof()}}
+$('geoAISettings').addEventListener('click',openSettings);
+$('geoLocalProof').addEventListener('click',()=>{const o=$('geoAIProofOutput');if(o)o.hidden=true;runLocalProof()});
+const output=document.createElement('div');output.id='geoAIProofOutput';output.className='geo-ai-output';output.hidden=true;output.setAttribute('role','status');output.setAttribute('aria-live','polite');$('provePanel').appendChild(output);
+$('proveRun').addEventListener('click',e=>{if(forceLocalProof)return;if(conf.enabled&&key){e.stopImmediatePropagation();runAIProof()}else{$('geoAIProofOutput').hidden=true}},true);
+window.addEventListener('offline',()=>{ready=false;status()});status();
+})();
+</script>
 </body>
 </html>
